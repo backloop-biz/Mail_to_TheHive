@@ -18,11 +18,17 @@ POST: case data come from POST request *
  This is the structure:
  
  TEMPLATE_NAME =>
+ 
     field => subject or body, it's the field where we look into
     
     value => string to search into previous field
-    (optional) stopsearch => true/false, used to instruct when stop looking for template (example stop at first match or not)
-    (optional) dynparts => array of key/value used to extract dynamic parts from message and convert in tags to TheHive (used for example to extract ticket ID)
-    (optional) startclosed => true/false, when true cases will be created in closed state
-    (optional) tag => static tag added to cases
-    (optional) ignore => 1/0 when true no case are created in TheHive
+ 
+ (optional) stopsearch => true/false, used to instruct when stop looking for template (example stop at first match or not)
+ 
+ (optional) dynparts => array of key/value used to extract dynamic parts from message and convert in tags to TheHive (used for example to extract ticket ID)
+ 
+ (optional) startclosed => true/false, when true cases will be created in closed state
+ 
+ (optional) tag => static tag added to cases
+ 
+ (optional) ignore => 1/0 when true no case are created in TheHive
