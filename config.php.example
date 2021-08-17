@@ -1,0 +1,86 @@
+<?php
+
+
+$authkey = "my_secret_TheHive_key";
+$base_url = "http://127.0.0.1:9000";
+$customer = "My Company";
+$db_file = "IgnoreObs/ignore.db";
+$log_file = "Mail_to_Thehive.log";
+$debug = 1;
+
+$imap_url = "{outlook.office365.com:993/imap/ssl}INBOX/CSIRT";
+$imap_username = "irt@mydomain.com";
+$imap_password = "my_secure_password";
+
+$mode = "POST"; // IMAP / POST
+
+$templateSelector = array(
+
+	"Office365_Phishing" => array(
+		array("field" => "body", "value" => "Questionable URLs detected in message"),
+	),
+	"User_clicked_link" => array(
+		array("field" => "body", "value" => "An end user has clicked on a link", "stopsearch" => "false", "dynparts" => array("Recipient" => 'Recipient<\/b><\/td>\n<td style="background:white">([_a-z0-9-.]+@[_a-z0-9-]+\.[a-z]{2,3}|[_a-z0-9-.]+@[_a-z0-9-]+\[\.\][a-z]{2,3})[<>')),
+		array("field" => "subject", "value" => "URL Defense Alert"),
+	),
+	"Malwarebytes_detections_cleaned" => array(
+		"start_closed" => "1",
+		array("field" => "subject", "value" => "Malwarebytes: Detections Cleaned Event Occurred"),		
+	),
+	"Umbrella_alert" => array(
+		array("field" => "body", "value" => "Command and Control", "tag" => "Severity:high", "stopsearch" => "false"),
+		array("field" => "body", "value" => "Phishing", "tag" => "Severity:high", "stopsearch" => "false"),
+		array("field" => "subject", "value" => "[CISCO UMBRELLA] Top blocked malicious requests"),
+        ),
+	"Workspace_user_suspended_by_admin" => array(
+		"start_closed" => "1",
+		array("field" => "subject", "value" => "Alert: User suspended (by admin)"),		
+	),
+	"Workspace_user_suspicious_login" => array(		
+		array("field" => "body", "value" => "User:", "stopsearch" => "false", "dynparts" => array("User" => "User\:\s(.*)\n")),
+		array("field" => "subject", "value" => "Alert:  Suspicious login"),		
+	),
+	"Workspace_suspended_user_made_active" => array(		
+		array("field" => "subject", "value" => "Alert:  Suspended user made active"),		
+	),
+	"Malwarebytes_detections_found" => array(
+		array("field" => "subject", "value" => "Malwarebytes: Detections Found Event Occurred")
+	),
+	"User_reported_phishing" => array(
+		array("field" => "subject", "value" => "Alert: User-reported phishing for")
+	),
+	"Phish_alert" => array(
+		array("field" => "subject", "value" => "[Phish Alert]")
+	),
+	"Phish_user_reported" => array(
+		array("field" => "subject", "value" => "Alert: User-reported phishing for")
+	),
+	//"Suspicious_login" => array(
+	//	array("field" => "subject", "value" => "Alert: Suspicious login")
+	//),
+	"Jump_ticket" => array(
+        array("field" => "subject", "value" => "Incident INC", "dynparts" => array("dynpart" => "Incident\s(INC[\d]+)\:")),
+        array("field" => "subject", "value" => "You have been mentioned in", "dynparts" => array("dynpart" => "in\s(INC[\d]+)")),
+    ),    
+    "Apex_virus_cleaned" => array(
+		"start_closed" => "1",
+        array("field" => "subject", "value" => "Apex Central Notification: Virus Found - First Action Successful"),                                                
+        array("field" => "subject", "value" => "Apex Central Notification: Virus Found - Second Action Successful"),
+    ),
+    "Apex_virus_found" => array(
+        array("field" => "subject", "value" => "Apex Central Notification: Virus Found"),
+        array("field" => "subject", "value" => "Apex Central Notification: Spyware/Grayware Found"),
+        array("field" => "body", "value" => "Result: Cleaned", "tag" => "Result:cleaned", "stopsearch" => "false", "dynparts" => array("Computer" => "Computer\:\s([A-Z0-9a-z_\-]+)\s")),
+        array("field" => "body", "value" => "Result:", "stopsearch" => "false", "dynparts" => array("Computer" => "Computer\:\s([A-Z0-9a-z_\-]+)\s")),
+		array("field" => "subject", "value" => "[car-hq-avir]Virus/Malware detected"),
+    ),
+    "Malicious_attachment_delivered" => array(
+        array("field" => "subject", "value" => "Attachment Defense Alert"),
+    ),
+    "Ignored_mail" => array(
+		"ignore" => "1",
+		array("field" => "subject", "value" => "Alert Resolved: Failed to send policy(ies) to 1 computer(s)"),	
+		array("field" => "from", "value" => "alert@foo.com"),
+    ),
+);
+?>
