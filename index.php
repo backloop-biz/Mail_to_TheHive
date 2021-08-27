@@ -11,10 +11,9 @@ $converter = new HtmlConverter(array('strip_tags' => true));
 if (file_exists($db_file)){
 	$raw_ignore_data = file_get_contents($db_file);
 	$ignore_data_array = json_decode($raw_ignore_data,true);
-	//print_r($ignore_data_array);
-	//die();
+
 } else {
-	//die("File DB non esiste!");
+
 }
 
 
@@ -24,6 +23,7 @@ if (file_exists($db_file)){
 if ($mode == "POST"){
 	
 	echo "Subject: ".$_POST['subject'];
+	//echo "Message type: ".$_POST['message_type'];
 	//echo print_r($mail);
 	$mailfields['subject'] = $_POST['subject'];
 	$markdown = "";
@@ -33,9 +33,9 @@ if ($mode == "POST"){
 	$mailfields['raw_content'] = $_POST['body'];
 	$mailfields['from'] = $_POST['from'];
 	$mailfields['message_id'] = $_POST['message_id'];
-	
+	$tmp_type = explode(";",$_POST['message_type']);
+	$mailfields['message_type'] = $tmp_type['0'];
 	$mailfields['references'] = $_POST['references'];
-	//$mailfields['raw_content'] = $mail['rawbody'];
 
 	//echo print_r($mailfields);
 	//die();
@@ -65,9 +65,8 @@ if ($mode == "POST"){
 
 	}
 
+} else {
+	echo "Mode not found!";
 }
-
-
-
 
 ?>

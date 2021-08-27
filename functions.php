@@ -75,7 +75,7 @@ function extractObs($obs){
 	
 	// Todo
 	if(preg_match_all('/(https:\/\/[a-zA-Z0-9.-]+\/?[^<>\s\"]+)|(hxxps:\/\/[a-zA-Z0-9.-]+\/?[^<>\s\"]+)|(hxxp:\/\/[a-zA-Z0-9.-]+\/?[^<>\s\"]+)|(http:\/\/[a-zA-Z0-9.-]+\/?[^<>\s\"]+)|(www.[a-zA-Z0-9.-]+\/?[^<>\s\"]+)/', $obs, $url_matches_raw)) {
-		$url_matches = array_unique($url_matches_raw['1'],SORT_STRING);
+		$url_matches = array_unique(array_merge($url_matches_raw['1'],$url_matches_raw['2'],$url_matches_raw['3'],$url_matches_raw['4'],$url_matches_raw['5']),SORT_STRING);
 		foreach($url_matches as $url){
 			if ((in_array($url,$ignore_data_array['url'])!==true)||(!is_array($ignore_data_array['url'])))
 				$urls[] = array("dataType" => "url","data" => $url,"message" => "Url Observable");
@@ -115,6 +115,8 @@ function check_tld($url) {
 }
 
 function attachToCase($caseId,$caseData){
+	
+	global $authkey;
 	global $url;
 	//$url = "https://thehive.backloop.biz/api/case/".$caseId."/artifact";
 	$data = array(			
@@ -132,7 +134,7 @@ function attachToCase($caseId,$caseData){
 	curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-	curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: data","Authorization: Bearer EBCo0T3sHs62787PiTPCMf3v/0lsOVx+"));
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: data","Authorization: Bearer ".$authkey));
 	$result = curl_exec($ch);
 	$curl_error = curl_error($ch);
 	curl_close($ch);
@@ -140,6 +142,46 @@ function attachToCase($caseId,$caseData){
 	$out['result'] = $result;
 	$out['error'] = $curl_error;
 	
+	return $out;
+
+}
+
+function shareAlert($caseId){
+	
+	global $authkey;
+	global $base_url;
+	
+	// {"shares":[{"organisationName":"Backloop","profile":"org-admin","tasks":"all","observables":"all"}]}
+	$url = $base_url."/api/alert/".$caseId."/shares";
+	$data = array("shares" => array("0" => array(
+		"organisationName" => "Backloop",
+		"profile" => "org-admin",
+		"tasks"=> "all",
+		"observables" => "all"	,
+	)));
+	
+	//print_r($data);
+
+	$postdata = json_encode($data);
+	if ($debug)
+		print_r($postdata);
+
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json","Authorization: Bearer ".$authkey));
+	$result = curl_exec($ch);
+	$curl_error = curl_error($ch);
+	curl_close($ch);
+	
+	$out['result'] = $result;
+	$out['error'] = $curl_error;
+	
+	echo print_r($out);
 	return $out;
 
 }
@@ -184,6 +226,39 @@ function shareCase($caseId){
 
 }
 	
+function updateAlert($caseId, $data){
+	
+	global $authkey;
+	global $base_url;
+	
+	// {"shares":[{"organisationName":"Backloop","profile":"org-admin","tasks":"all","observables":"all"}]}
+	$url = $base_url."/api/alert/".$caseId;
+		
+	//print_r($data);
+
+	$postdata = json_encode($data);
+	if ($debug)
+		print_r($postdata);
+
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	//curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json","Authorization: Bearer ".$authkey));
+	$result = curl_exec($ch);
+	$curl_error = curl_error($ch);
+	curl_close($ch);
+	
+	$out['result'] = $result;
+	$out['error'] = $curl_error;
+	
+	return $out;
+
+}
 	
 function updateCase($caseId, $data){
 	
@@ -216,6 +291,40 @@ function updateCase($caseId, $data){
 	$out['error'] = $curl_error;
 	
 	return $out;
+
+}
+
+function getAlert($caseId){
+
+global $authkey;
+global $base_url;
+
+// {"shares":[{"organisationName":"Backloop","profile":"org-admin","tasks":"all","observables":"all"}]}
+$url = $base_url."/api/alert/".$caseId;
+	
+//print_r($data);
+
+//$postdata = json_encode($data);
+//if ($debug)
+//	print_r($postdata);
+
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+//curl_setopt($ch, CURLOPT_POST, 1);
+//curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+//curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: Bearer ".$authkey));
+$result = curl_exec($ch);
+$curl_error = curl_error($ch);
+curl_close($ch);
+
+$out['result'] = $result;
+$out['error'] = $curl_error;
+
+return $out;
 
 }
 	
@@ -359,6 +468,43 @@ $ch = curl_init($url);
 
 }
 
+function searchAlert($query){
+		
+global $debug;
+		global $authkey;
+		global $base_url;
+		$url = $base_url."/api/alert/_search";
+		$data = array(
+			"query" => array("tags" => $query['tags']),
+			//"query" => array("In" => array("tags" => "message_id:".$query['tags']['1'])),
+			"range" => "all"
+		);
+//if ($debug)                
+		//	echo print_r($data);
+
+		$postdata = json_encode($data); 
+		//print_r($postdata);
+
+$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json","Authorization: Bearer ".$authkey));
+		$result = curl_exec($ch);
+		$curl_error = curl_error($ch);
+		curl_close($ch);
+		
+		$out['result'] = $result;
+		$out['error'] = $curl_error;
+						
+		return $out;
+
+}
+
+
 function createCase($caseData){
 	
 	global $authkey;
@@ -441,18 +587,116 @@ function createCase($caseData){
 
 }
 
+function createAlert($caseData){
+	
+	global $authkey;
+	global $base_url;
+	global $customer;
+	global $debug;
+	
+	$url = $base_url."/api/alert";
+	
+	/*
+	if ($caseData['dynpart'] != ""){
+		$tags = array("message_id:".$caseData['messageId'], "dynpart:".$caseData['dynpart']);
+	} else {	
+		$tags = array("message_id:".$caseData['messageId']);
+		if (is_array($caseData['template_tag'])){
+			foreach($caseData['template_tag'] as $ttag){
+				$tags[] = $ttag;
+			}
+		}
+	}
+	*/
+	
+	$tags = array("message_id:".$caseData['messageId']);
+	if ($caseData['dynpart'] != ""){
+		$tags[] = $caseData['dynpart'];
+	}
+	if (is_array($caseData['template_tag'])){
+		foreach($caseData['template_tag'] as $ttag){
+			$tags[] = $ttag;
+		}
+	}
+		
+	$data = array(
+		"title" => $caseData['title'],
+		"description" => $caseData['description'],
+		"type"=>"external",
+		"status" => $caseData['status'],
+		"source" => "mail",
+		"sourceRef" => date("d-m-Y H:i:s"),
+		//"caseTemplate" => $caseData['template'],
+		//"template" => $caseData['template'],
+		//"customFields" => array("template" => $caseData['template'],"customer" => $customer, "mail-from" => $caseData['mail_from']),
+		//"attachment" => array("filename" => $caseData['attach_filename'], "contents" => $caseData['attach_filename'].";message/rfc822;".$caseData['attach_content']),
+		//"tags" => array("customer:".$customer, "message_id:".$caseData['messageId'], "user_email:".$caseData['mail_from']),
+		"tags" => $tags,
+		//"artifacts" => array(
+		//	array(
+		//		"dataType" => "file", 
+		//		"data" => $caseData['attach_filename'].";message/rfc822;".$caseData['attach_content'],
+		//		"message" => "Username from alert"
+		//	),
+		//),
+		"artifacts" => $caseData['artifacts'],
+		
+		//"artifacts" => $total_obs
+	);
+	
+	//print_r($data);
+
+	$postdata = json_encode($data);
+	if ($debug > 1)
+		echo print_r($data,1);
+
+	$ch = curl_init($url);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+	curl_setopt($ch, CURLOPT_POST, 1);
+	curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+	curl_setopt($ch, CURLOPT_HTTPHEADER, array("Content-Type: application/json","Authorization: Bearer ".$authkey));
+	$result = curl_exec($ch);
+	$curl_error = curl_error($ch);
+	curl_close($ch);
+	
+	$out['result'] = $result;
+	$out['error'] = $curl_error;
+			
+	return $out;
+
+}
+
+function htmltoimg($html_string){
+	
+	$rand = generateRandomString();
+	file_put_contents("mail/".$rand.".html",$html_string);
+	exec("wkhtmltoimage -f jpg mail/".$rand.".html mail/".$rand.".jpg",$ret_cmd,$ret_cmd_val);
+	return "mail/".$rand.".jpg";
+}
+
 function main($mailfields){
 	
 	global $debug;
 	global $converter;
 	global $log_file;
+	
+	$img_path = "";
 	// MAIN
 
 	$caseData['title'] = $mailfields['subject'];
-	$markdown = "";
-	if ($mailfields['body'] != "")
-		$markdown = $converter->convert($mailfields['body']);
-	$caseData['description'] = "User: ".$mailfields['from']." wrote:\n".$markdown;
+	
+	if ($mailfields['message_type'] == "text/plain"){
+		$caseData['description'] = "User: ".$mailfields['from']." wrote:\n".$mailfields['body'];
+	} else {
+		$markdown = "";
+		if ($mailfields['body'] != ""){
+			$markdown = $converter->convert($mailfields['body']);		
+		}
+		$caseData['description'] = "User: ".$mailfields['from']." wrote:\n".$markdown;
+	}
 	$caseData['raw_body'] = $mailfields['body'];
 	$caseData['raw_content'] = $mailfields['raw_content'];
 	if ($debug > 1)
@@ -466,19 +710,31 @@ function main($mailfields){
 		$caseData['references'] = "";
 	$query = array();
 	$case_id = 0;
+	$alert_id = 0;
 	$template_data_dyn = checkTemplate($caseData['title'],$caseData['raw_content']);
-	echo print_r($template_data_dyn,1);
+	//echo print_r($template_data_dyn,1);
 	//print_r($caseData['references']);
 	$query['tags'] = "message_id:".$caseData['messageId'];
-		$res_search = searchCase($query);
+	$res_search = searchCase($query);
+	$res_search_json = json_decode($res_search['result']);
+	if (is_numeric($res_search_json['0']->caseId)){
+		$case_id = $res_search_json['0']->caseId;
+		echo "Found case_id: ".$case_id." exit";
+		if ($debug > 1)
+			file_put_contents($log_file,"-------------------------\nOutput case: \nSubj: ".$caseData['title']." => Trovato case_id: ".$case_id." esco",FILE_APPEND);
+		exit();
+	} else {		
+		$res_search = searchAlert($query);
 		$res_search_json = json_decode($res_search['result']);
-		if (is_numeric($res_search_json['0']->caseId)){
-			$case_id = $res_search_json['0']->caseId;
-			echo "Trovato case_id: ".$case_id." esco";
+		if ($res_search_json['0']->id != ""){
+			$alert_id = $res_search_json['0']->id;
+			echo "Trovato alert_id: ".$alert_id." esco";
 			if ($debug > 1)
-				file_put_contents($log_file,"-------------------------\nOutput case: \nSubj: ".$caseData['title']." => Trovato case_id: ".$case_id." esco",FILE_APPEND);
+				file_put_contents($log_file,"-------------------------\nOutput alert: \nSubj: ".$caseData['title']." => Trovato alert_id: ".$case_id." esco",FILE_APPEND);
 			exit();
-		}
+		} 
+		//die(print_r($res_search_json));
+	}
 			
 	if ($template_data_dyn['dynparts']['dynpart'] != ""){
 		$query['tags'] = "dynpart:".$template_data_dyn['dynparts']['dynpart'];
@@ -509,37 +765,78 @@ function main($mailfields){
 			echo "Non trovo ".$template_data_dyn['dynparts']['dynpart']." nei case";	
 		}
 	}
-
-	foreach($caseData['references'] as $reference){
-		$query = array();
-		$query['tags'] = "message_id:".$reference;
-		$res_search = searchCase($query);
-		$res_search_json = json_decode($res_search['result']);
-		if ((is_array($res_search_json))&&(is_numeric($res_search_json['0']->caseId))){
-			$case_id = $res_search_json['0']->caseId;
-			echo "Trovato case_id: ".$case_id." nei references";
-			$orig_case = getCase($case_id);
-			$orig_case_data = json_decode($orig_case['result']);
-			if ($debug)
-				file_put_contents($log_file,"-------------------------\nOutput case: \nSubj: ".$caseData['title']." Ref: ".$reference." => Trovato reference case_id: ".$case_id."\n",FILE_APPEND);
-			$new_tags = $orig_case_data->tags;
-			$new_tags[] = "message_id:".$caseData['messageId'];
-			$new_data = array("description" => $caseData['description']."\n--------------------\n".$orig_case_data->description,"tags" => $new_tags);
-			//if ($debug)
-			//	file_put_contents($log_file,"-------------------------\nOutput new data for case: \nSubj: ".$caseData['title']." => ".print_r($new_data,1)."\n",FILE_APPEND);
-			$res_update = updateCase($case_id,$new_data);
-			if ($res_update['error'] != ""){
-							echo $res_update['error'];
-							if ($debug)
-								 file_put_contents($log_file,"-------------------------\nOutput updateCase ".$case_id.": \n\n".print_r($res_update,1)."\n INPUT DATA\n".print_r($new_data),FILE_APPEND);
-							die();
+	
+	if (is_array($caseData['references'])){
+		foreach($caseData['references'] as $reference){
+			$query = array();
+			$query['tags'] = "message_id:".$reference;
+			$res_search = searchCase($query);
+			$res_search_json = json_decode($res_search['result']);
+			if ((is_array($res_search_json))&&(is_numeric($res_search_json['0']->caseId))){
+				$case_id = $res_search_json['0']->caseId;
+				echo "Trovato case_id: ".$case_id." nei references";
+				$orig_case = getCase($case_id);
+				$orig_case_data = json_decode($orig_case['result']);
+				if ($debug)
+					file_put_contents($log_file,"-------------------------\nOutput case: \nSubj: ".$caseData['title']." Ref: ".$reference." => Trovato reference case_id: ".$case_id."\n",FILE_APPEND);
+				$new_tags = $orig_case_data->tags;
+				$new_tags[] = "message_id:".$caseData['messageId'];
+				
+				if ($mailfields['message_type'] == "text/plain"){
+					//$caseData['description'] = "User: ".$mailfields['from']." wrote:\n".$mailfields['body'];
+				} else {
+					$markdown = "";
+					if ($mailfields['body'] != ""){
+						$markdown = $converter->convert($mailfields['body']);		
 					}
-			
+					$img_path =  htmltoimg($mailfields['raw_content']);
+					$caseData['description'] = "User: ".$mailfields['from']." wrote:\n"."![content image](https://thehive.backloop.biz/gmailapi/".$img_path.")\n".$caseData['description'];
+					//$caseData['description'] = "User: ".$mailfields['from']." wrote:\n".$markdown;
+				}				
+					
+				$new_data = array("description" => $caseData['description']."\n--------------------\n".$orig_case_data->description,"tags" => $new_tags);
+				//if ($debug)
+				//	file_put_contents($log_file,"-------------------------\nOutput new data for case: \nSubj: ".$caseData['title']." => ".print_r($new_data,1)."\n",FILE_APPEND);
+				$res_update = updateCase($case_id,$new_data);
+				if ($res_update['error'] != ""){
+					echo $res_update['error'];
+					if ($debug)
+						 file_put_contents($log_file,"-------------------------\nOutput updateCase ".$case_id.": \n\n".print_r($res_update,1)."\n INPUT DATA\n".print_r($new_data),FILE_APPEND);
+					die();
+				}
+				exit();
+			} else {
+				$res_search = searchAlert($query);
+				$res_search_json = json_decode($res_search['result']);
+				if ((is_array($res_search_json))&&($res_search_json['0']->id != "")){
+					$alert_id = $res_search_json['0']->id;
+					echo "Trovato alert_id: ".$alert_id." nei references";
+					$orig_case = getAlert($alert_id);
+					$orig_case_data = json_decode($orig_case['result']);
+					if ($debug)
+						file_put_contents($log_file,"-------------------------\nOutput alert: \nSubj: ".$caseData['title']." Ref: ".$reference." => Trovato reference alert_id: ".$alert_id."\n",FILE_APPEND);
+					$new_tags = $orig_case_data->tags;
+					$new_tags[] = "message_id:".$caseData['messageId'];
+					$new_data = array("description" => $caseData['description']."\n--------------------\n".$orig_case_data->description,"tags" => $new_tags);
+					
+					//if ($debug)
+					//	file_put_contents($log_file,"-------------------------\nOutput new data for case: \nSubj: ".$caseData['title']." => ".print_r($new_data,1)."\n",FILE_APPEND);
+					
+					$res_update = updateAlert($alert_id,$new_data);
+					if ($res_update['error'] != ""){
+						echo $res_update['error'];
+						if ($debug)
+							 file_put_contents($log_file,"-------------------------\nOutput updateAlert ".$alert_id.": \n\n".print_r($res_update,1)."\n INPUT DATA\n".print_r($new_data),FILE_APPEND);
+						die();
+					}
+					exit();
+					
+				}	
+			}
+			//print_r($res_search_json);
+			//echo "Case ID: ".$case_id;
 		}
-		//print_r($res_search_json);
-		//echo "Case ID: ".$case_id;
 	}
-
 
 	// sistemi casi con "Enrico <my@email.com>"
 	if (preg_match_all("/\\<(.*?)\\>/", $mailfields['from'], $matches))
@@ -552,7 +849,7 @@ function main($mailfields){
 	//$caseData['attach_name'] = $mail['attachment'][0]['AttachName'];
 	//$caseData['attach_filename'] = $mail['attachment'][0]['AttachFilename'];
 	$caseData['artifacts'] = $obs_array;
-	if ($case_id == 0){
+	if (($case_id == 0)&&($alert_id == 0)){
 		if ((1==0)&&(in_array($caseData['mail_from'],$ignore_data_array['mail']))){
 			if ($debug)
 				echo "Ignored mail address (from)";
@@ -567,108 +864,137 @@ function main($mailfields){
 				$caseData['dynpart'] = "dynpart:".$template_data['dynparts']['dynpart'];
 			else	
 				$caseData['dynpart'] = "";
-				
-			if ($template_data['ignore'] != 1){
-			echo "Nuovo case";	
-			$res_raw = createCase($caseData);
-			if ($res_raw['error'] != ""){
-				echo "Error: ".$res_raw['error'];
-				if ($debug)
-							 file_put_contents($log_file,"-------------------------\nOutput createCase: \n\n".print_r($res_raw,1)."\n INPUT DATA\n".print_r($caseData),FILE_APPEND);
-				die();
-			} else {
-				$res_json = json_decode($res_raw['result'],true);
-				if ($debug)
-					file_put_contents($log_file,"-------------------------\nOutput createCase: \n\n".print_r($res_raw,1),FILE_APPEND);
-				sleep(1);
-				//$res_share = shareCase($res_json['caseId']);
-			}
-			$rand = generateRandomString();
-			mkdir("mail/".$rand);
-			$ret_write = file_put_contents("mail/".$rand."/".$rand.".raw",$mailfields['raw_content']);
-			exec("python3 emlparser.py -p mail/".$rand."/ -o mail/".$rand."/",$ret_cmd,$ret_cmd_val);
-			if ($debug)
-				file_put_contents($log_file,"-------------------------\nOutput parsing: \n\n".print_r($ret_cmd,1)."Ret val: ".$ret_cmd_val." Ret write:".$ret_write,FILE_APPEND);
 			
+			
+			if ($template_data['ignore'] != 1){
 				
-			//echo print_r($res_json,1);
-			//print_r($res_json);
-			//echo "ID: ".$res_json['caseId'];
-			//$out2 = attachToCase($res_json['caseId'],$caseData);
-			//print_r($res_raw);
-			$mail_attach = "";
-			for($i=1;$i<count($ret_cmd);$i++){
-				//Todo check mimetypes
-				if (($ret_cmd[$i] != "")&&((substr($ret_cmd[$i],-4)==".eml")||($ret_cmd[$i] == "part-000"))&&($res_json['caseId'] != "")){
-					$ret_cmd_attach = array();
-					sleep(1);
-					echo "RFC822 Attach found: ".$ret_cmd[$i];
-					$mail_attach = $ret_cmd[$i];
-					$cmd_attach = "sudo python3 attach_file.py ".$res_json['caseId']." \"mail/".$rand."/".$ret_cmd[$i]."\" CaseAttachment";
-					exec($cmd_attach,$ret_cmd_attach,$ret_cmd_val_attach);
+				if (($caseData['template'] != "")&&(!$alert_on_empty_template)){
+					
+					echo "Nuovo case";						
+					$img_path =  htmltoimg($mailfields['raw_content']);
+					$caseData['description'] = "![content image](https://thehive.backloop.biz/gmailapi/".$img_path.")\n".$caseData['description'];
+					//$img_path =  htmltoimg($mailfields['raw_content']);
+					$res_raw = createCase($caseData);
+					if ($res_raw['error'] != ""){
+						echo "Error: ".$res_raw['error'];
+						if ($debug)
+									 file_put_contents($log_file,"-------------------------\nOutput createCase: \n\n".print_r($res_raw,1)."\n INPUT DATA\n".print_r($caseData),FILE_APPEND);
+						die();
+					} else {
+						$res_json = json_decode($res_raw['result'],true);
+						if ($debug)
+							file_put_contents($log_file,"-------------------------\nOutput createCase: \n\n".print_r($res_raw,1),FILE_APPEND);
+						sleep(1);
+						//$res_share = shareCase($res_json['caseId']);
+					}
+					$rand = generateRandomString();
+					mkdir("mail/".$rand);
+					$ret_write = file_put_contents("mail/".$rand."/".$rand.".raw",$mailfields['raw_content']);
+					exec("python3 emlparser.py -p mail/".$rand."/ -o mail/".$rand."/",$ret_cmd,$ret_cmd_val);
 					if ($debug)
-						file_put_contents($log_file,"-------------------------\nOutput attachment: \n\n".$cmd_attach."\n".print_r($ret_cmd_attach,1)."Ret val: ".$ret_cmd_val_attach,FILE_APPEND);	
+						file_put_contents($log_file,"-------------------------\nOutput parsing: \n\n".print_r($ret_cmd,1)."Ret val: ".$ret_cmd_val." Ret write:".$ret_write,FILE_APPEND);
+					
+						
+					//echo print_r($res_json,1);
+					//print_r($res_json);
+					//echo "ID: ".$res_json['caseId'];
+					//$out2 = attachToCase($res_json['caseId'],$caseData);
+					//print_r($res_raw);
+					$mail_attach = "";
+					for($i=1;$i<count($ret_cmd);$i++){
+						//Todo check mimetypes
+						if (($ret_cmd[$i] != "")&&((substr($ret_cmd[$i],-4)==".eml")||($ret_cmd[$i] == "part-000"))&&($res_json['caseId'] != "")){
+							$ret_cmd_attach = array();
+							sleep(1);
+							echo "RFC822 Attach found: ".$ret_cmd[$i];
+							$mail_attach = $ret_cmd[$i];
+							$cmd_attach = "sudo python3 attach_file.py ".$res_json['caseId']." \"mail/".$rand."/".$ret_cmd[$i]."\" CaseAttachment";
+							exec($cmd_attach,$ret_cmd_attach,$ret_cmd_val_attach);
+							if ($debug)
+								file_put_contents($log_file,"-------------------------\nOutput attachment: \n\n".$cmd_attach."\n".print_r($ret_cmd_attach,1)."Ret val: ".$ret_cmd_val_attach,FILE_APPEND);	
+						} else {
+							file_put_contents($log_file,"|".substr($ret_cmd[$i],-4)."|".$ret_cmd[$i],FILE_APPEND);
+						}
+					}
+					// extract SPF from artifact
+					if (($mail_attach != "")&&(file_exists("mail/".$rand."/".$mail_attach))){
+						$spf_tag = array();
+						$artifact_raw = file_get_contents("mail/".$rand."/".$mail_attach);
+						//echo print_r($res_json,1);
+						if (preg_match_all("/Received-SPF:\s([A-Za-z0-9]+)\s/",$artifact_raw,$extract_results)){
+							//echo print_r($extract_results,1);
+							//$spf_tag[] = end($extract_results['0']);
+							$new_tags = $res_json['tags'];
+							$new_tags[] = end($extract_results['0']);
+							$res_update = updateCase($res_json['caseId'],array("tags" => $new_tags));
+									 if ($res_update['error'] != ""){
+										 echo $res_update['error'];
+											if ($debug)
+												 file_put_contents($log_file,"-------------------------\nOutput updateCase ".$case_id.": \n\n".print_r($res_update,1)."\n INPUT DATA\n".print_r($new_data),FILE_APPEND);
+											 die();
+									}	
+							if ($debug)
+											file_put_contents($log_file,"-------------------------\nOutput extract:\n".print_r($extract_results,1),FILE_APPEND);
+						}
+					} else {
+						echo "File: "."mail/".$rand."/".$mail_attach." non esiste!";
+					}	
 				} else {
-					file_put_contents($log_file,"|".substr($ret_cmd[$i],-4)."|".$ret_cmd[$i],FILE_APPEND);
-				}
-			}
-			// extract SPF from artifact
-			if (($mail_attach != "")&&(file_exists("mail/".$rand."/".$mail_attach))){
-			$spf_tag = array();
-			$artifact_raw = file_get_contents("mail/".$rand."/".$mail_attach);
-			//echo print_r($res_json,1);
-			if (preg_match_all("/Received-SPF:\s([A-Za-z0-9]+)\s/",$artifact_raw,$extract_results)){
-				//echo print_r($extract_results,1);
-				//$spf_tag[] = end($extract_results['0']);
-				$new_tags = $res_json['tags'];
-				$new_tags[] = end($extract_results['0']);
-				$res_update = updateCase($res_json['caseId'],array("tags" => $new_tags));
-						 if ($res_update['error'] != ""){
-							 echo $res_update['error'];
-								if ($debug)
-									 file_put_contents($log_file,"-------------------------\nOutput updateCase ".$case_id.": \n\n".print_r($res_update,1)."\n INPUT DATA\n".print_r($new_data),FILE_APPEND);
-								 die();
-						}	
-				if ($debug)
-								file_put_contents($log_file,"-------------------------\nOutput extract:\n".print_r($extract_results,1),FILE_APPEND);
-			}
-			} else {
-				echo "File: "."mail/".$rand."/".$mail_attach." non esiste!";
-			}
-			// add sender as OBS
-			$res_obs = obsToCase($res_json['caseId'],array("data" => $caseData['mail_from'],"dataType" => "mail", "message"=> "sender mail"));
-
-			foreach($obs_array as $obs){
-				$res_obs = obsToCase($res_json['caseId'],$obs);
-				//print_r($res_obs);
-				usleep(1000);						
-			}
-			//$res_share = shareCase($res_json['caseId']);
-			//print_r($res_share);
-			// test file upload
-			// "$fileName;$contentType;$b64File"
-			//$attach_obs = array(
-			//	"dataType" => "file", 
-			//	"data" => $caseData['attach_name'].";message/rfc822;".base64_encode(file_get_contents($caseData['attach_filename'])),
-			//	"message" => "Username from alert",
-			//	//"filename" => $caseData['attach_name'],
-			//);
-			//$res_obs = obsToCase($res_json['caseId'],$attach_obs);
-			//print_r($res_obs);
-			if ($caseData['attach_filename'] != "")
-				system("python3 attach_file.py ".$res_json['caseId']." ".$caseData['attach_filename']." CaseAttachment");
-				//echo httpPostDataFile("http://voip.backloop.biz:9000/api/case/".$res_json['caseId']."/artifact", $attach_obs, array($caseData['attach_filename']));
-				
-			if ($template_data['start_closed'] == 1){
-				$ret_update = updateCase($res_json['caseId'], array("status" => "Resolved","resolutionStatus" => "TruePositive", "impactStatus" => "NoImpact", "summary" => "auto close"));
-				if ($debug){
-					file_put_contents($log_file,"-------------------------\nOutput updateCase: \n\n".print_r($ret_update,1),FILE_APPEND);
-					//print_r($ret_update);
-				}
-				
-			}
-			$res_share = shareCase($res_json['caseId']);
+					echo "Nuovo alert";	
+					$res_raw = createAlert($caseData);
+					if ($res_raw['error'] != ""){
+						echo "Error: ".$res_raw['error'];
+						if ($debug)
+									 file_put_contents($log_file,"-------------------------\nOutput createAlert: \n\n".print_r($res_raw,1)."\n INPUT DATA\n".print_r($caseData),FILE_APPEND);
+						die();
+					} else {
+						$res_json = json_decode($res_raw['result'],true);
+						if ($debug)
+							file_put_contents($log_file,"-------------------------\nOutput createAlert: \n\n".print_r($res_raw,1),FILE_APPEND);
+						sleep(1);
+						$res_share = sharealert($res_json['id']);
+					}
 				}	
+			} else {
+				echo "Ignored case!";
+			}
+			
+			if ($res_json['caseId'] != ""){
+				// add sender as OBS
+				$res_obs = obsToCase($res_json['caseId'],array("data" => $caseData['mail_from'],"dataType" => "mail", "message"=> "sender mail"));
+
+				foreach($obs_array as $obs){
+					$res_obs = obsToCase($res_json['caseId'],$obs);
+					//print_r($res_obs);
+					usleep(1000);						
+				}
+				//$res_share = shareCase($res_json['caseId']);
+				//print_r($res_share);
+				// test file upload
+				// "$fileName;$contentType;$b64File"
+				//$attach_obs = array(
+				//	"dataType" => "file", 
+				//	"data" => $caseData['attach_name'].";message/rfc822;".base64_encode(file_get_contents($caseData['attach_filename'])),
+				//	"message" => "Username from alert",
+				//	//"filename" => $caseData['attach_name'],
+				//);
+				//$res_obs = obsToCase($res_json['caseId'],$attach_obs);
+				//print_r($res_obs);
+				if ($caseData['attach_filename'] != "")
+					system("python3 attach_file.py ".$res_json['caseId']." ".$caseData['attach_filename']." CaseAttachment");
+					//echo httpPostDataFile("http://voip.backloop.biz:9000/api/case/".$res_json['caseId']."/artifact", $attach_obs, array($caseData['attach_filename']));
+					
+				if ($template_data['start_closed'] == 1){
+					$ret_update = updateCase($res_json['caseId'], array("status" => "Resolved","resolutionStatus" => "TruePositive", "impactStatus" => "NoImpact", "summary" => "auto close"));
+					if ($debug){
+						file_put_contents($log_file,"-------------------------\nOutput updateCase: \n\n".print_r($ret_update,1),FILE_APPEND);
+						//print_r($ret_update);
+					}
+					
+				}
+				$res_share = shareCase($res_json['caseId']);
+			}
+				//}	
 		}
 	} else {
 		//case_id found UPDATE CASE TODO
@@ -834,6 +1160,10 @@ function checkTemplate($subject,$body,$from=null){
 	foreach($templateSelector as $key=>$template){
 		
 		$ret['start_closed'] = 0;
+		$ret['dynparts'] = array();
+		$ret['tags'] = array();
+		$ret['template'] = "";
+		
 		foreach($template as $obskey=>$templateObs){			
 			
 			if (($obskey == "start_closed") && ($templateObs == "1")){
@@ -850,23 +1180,23 @@ function checkTemplate($subject,$body,$from=null){
 				if (strpos($body, $templateObs['value']) !== false){
 					$ret['template'] = $key;
 					if (is_array($templateObs['dynparts']) === true){
-						foreach($templateObs['dynparts'] as $key=>$dynpart){
+						foreach($templateObs['dynparts'] as $dynkey=>$dynpart){
 							if(preg_match_all("/".$dynpart."/", $body, $dynpart_raw)) {   
-								if ($key == "dynpart")           
+								if ($dynkey == "dynpart")           
 									$ret['dynparts']['dynpart'] = $dynpart_raw['1']['0']; 
 								else	          								
-									$ret['tags'][] = $key.":".$dynpart_raw['1']['0'];
+									$ret['tags'][] = $dynkey.":".$dynpart_raw['1']['0'];
 							}
 						}
 					}
 					if ($templateObs['tag'] != "")
 						$ret['tags'][] = $templateObs['tag'];
 
-					if ($templateObs['stopserver'] != "false")
+					if ($templateObs['stopsearch'] != "false")
 						return $ret;
 				}
 			} else if ($templateObs['field'] == "subject"){
-				//echo "Confronto: ".$subject." con: ".$templateObs['value'];
+				//echo "Confronto: -".$subject."- con: -".$templateObs['value']."-";
 				if (strpos($subject, $templateObs['value']) !== false){
 					$ret['template'] = $key;
 					if (is_array($templateObs['dynparts']) === true){
