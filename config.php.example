@@ -72,7 +72,7 @@ $templateSelector = array(
         array("field" => "subject", "value" => "Apex Central Notification: Spyware/Grayware Found"),
         array("field" => "body", "value" => "Result: Cleaned", "tag" => "Result:cleaned", "stopsearch" => "false", "dynparts" => array("Computer" => "Computer\:\s([A-Z0-9a-z_\-]+)\s")),
         array("field" => "body", "value" => "Result:", "stopsearch" => "false", "dynparts" => array("Computer" => "Computer\:\s([A-Z0-9a-z_\-]+)\s")),
-		array("field" => "subject", "value" => "[car-hq-avir]Virus/Malware detected"),
+		array("field" => "subject", "value" => "[avir]Virus/Malware detected"),
     ),
     "Malicious_attachment_delivered" => array(
         array("field" => "subject", "value" => "Attachment Defense Alert"),
