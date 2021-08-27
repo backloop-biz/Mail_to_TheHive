@@ -12,6 +12,9 @@ POST: case data come from POST request *
 
 * we're no more able to use IMAP for certain customer as policy deny it. We create with Google script a simple connector that send us by POST the content of mail message of Gmail Inbox.
 
+For POST mode you can use the Google script saved on google_script.js (https://script.google.com)
+For IMAP mode we call through crontab the index.php file
+
 # TEMPLATE SELECTOR
  A PHP array is used to instruct how assign template to mail message.
  
